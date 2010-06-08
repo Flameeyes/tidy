@@ -1,18 +1,20 @@
 require 'rubygems'
 require 'rake'
 
-require File.join(File.expand_path(File.dirname(__FILE__)), "lib", "polisher", "alone")
+#require File.join(File.expand_path(File.dirname(__FILE__)), "lib")
+
+MAKE = 'make'
 
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "polisher"
+    gem.name = "tidy"
     gem.summary = "HTML validator."
     gem.description = <<-EOS
     Validates a web page.
     EOS
     gem.email = "carl.douglas@gmail.com"
-    gem.homepage = "http://github.com/carld/polisher"
+    gem.homepage = "http://github.com/carld/tidy"
     gem.authors = ["Carl Douglas"]
   end
   Jeweler::GemcutterTasks.new
@@ -22,7 +24,7 @@ end
 
 desc "Launch an IRB session with the environment loaded"
 task :console do
-  exec("irb -I lib -r polisher/alone")
+  exec("irb -I lib -r tidy/alone")
 end
 
 require 'spec/rake/spectask'
@@ -46,8 +48,38 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "polisher #{version}"
+  rdoc.title = "tidy #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
+namespace :ext do
+
+  file ext_extconf = 'ext/extconf.rb'
+  ext_sources = FileList['ext/*.{h,rb,c}']
+  ext_libname = "lib/tidy.#{Config::CONFIG['DLEXT']}"
+
+  file ext_libname => ext_sources + ['ext/Makefile'] do
+    chdir('ext') { sh MAKE }
+    cp "ext/tidy.#{Config::CONFIG['DLEXT']}", ext_libname
+  end
+
+  desc "Build C extension"
+  task :build => [:make]
+
+  task :make => ext_libname
+
+  file 'ext/Makefile' => ext_extconf do
+    chdir 'ext' do
+      ruby 'extconf.rb'
+    end
+  end
+
+end
+
+task :clean do
+  chdir 'ext' do
+    sh "#{MAKE} clean" if test ?e, 'Makefile'
+  end
 end
 
