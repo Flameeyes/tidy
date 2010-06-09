@@ -2,9 +2,25 @@
 #include "tidy.h"
 #include "buffio.h"
 
-static uint rb_tidyGetByte( TidyInputSource* source );
-static void rb_tidyUngetByte( TidyInputSource* source, uint byteValue );
-static Bool rb_tidyIsEOF( TidyInputSource* source );
+int TIDY_CALL rb_tidyGetByte( TidyInputSource* source )
+{
+  VALUE data = (VALUE)source->sourceData;
+  VALUE value = rb_funcall(data, rb_intern("getc"), 0, NULL);
+  return NUM2INT(value);
+}
+
+void TIDY_CALL rb_tidyUngetByte( TidyInputSource* source, byte byteValue )
+{
+  VALUE data = (VALUE)source->sourceData;
+  VALUE value = rb_funcall(data, rb_intern("ungetc"), 1, INT2NUM(byteValue));
+}
+
+Bool TIDY_CALL rb_tidyIsEOF( TidyInputSource* source )
+{
+  VALUE data = (VALUE)source->sourceData;
+  VALUE value = rb_funcall(data, rb_intern("eof"), 0, NULL);
+  return value == Qfalse ? no : yes;
+}
 
 static VALUE cTidy;
 
@@ -36,7 +52,8 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   TidyInputSource source;
   int status          = 0;
 
-  Data_Get_Struct(self, TidyDoc, tdoc);
+  /* See platform.h, opaque_type for typedef convention */
+  Data_Get_Struct(self, struct _TidyDoc, tdoc);
 
   tidyBufInit( &output );
   tidyBufInit( &errbuf );
@@ -47,7 +64,10 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 
   if (status >= 0) {
     if (rb_respond_to(input, rb_intern("getc"))) {
-      tidyInitSource(&source, (void *)&input, rb_tidyGetByte, rb_tidyUngetByte, rb_tidyIsEOF);
+      tidyInitSource(&source, (void *)&input,
+        (TidyGetByteFunc)rb_tidyGetByte,
+        (TidyUngetByteFunc)rb_tidyUngetByte,
+        (TidyEOFFunc)rb_tidyIsEOF);
       status = tidyParseSource(tdoc, &source);
     } else {
       status = tidyParseString(tdoc, StringValuePtr(input));
@@ -78,22 +98,4 @@ Init_tidy()
   rb_define_method(cTidy, "parse", rb_tidy_parse, 1);
 }
 
-static uint rb_tidyGetByte( TidyInputSource* source )
-{
-  VALUE *data = (VALUE *)source->sourceData;
-  VALUE value = rb_funcall(data, rb_intern("getc"), 0, NULL);
-  return NUM2INT(value);
-}
 
-static void rb_tidyUngetByte( TidyInputSource* source, uint byteValue )
-{
-  VALUE *data = (VALUE *)source->sourceData;
-  VALUE value = rb_funcall(data, rb_intern("ungetc"), 1, INT2NUM(byteValue));
-}
-
-static Bool rb_tidyIsEOF( TidyInputSource* source )
-{
-  VALUE *data = (VALUE *)source->sourceData;
-  VALUE value = rb_funcall(data, rb_intern("eof"), 0, NULL);
-  return value == 0 ? no : yes;
-}
