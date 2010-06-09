@@ -40,7 +40,7 @@ static VALUE rb_tidy_new(VALUE class, VALUE hash)
   TidyDoc tdoc = tidyCreate();
   VALUE tdata = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
   argv[0] = hash;
-  //rb_obj_call_init(tdata, 1, argv);
+  rb_obj_call_init(tdata, 0, NULL);
   return tdata;
 }
 
@@ -48,6 +48,8 @@ static VALUE rb_tidy_new(VALUE class, VALUE hash)
 static VALUE rb_tidy_parse(VALUE self, VALUE input)
 {
   VALUE array;
+  VALUE access;
+
   TidyDoc tdoc;
   TidyBuffer output;
   TidyBuffer errbuf;
@@ -62,6 +64,9 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   array = rb_ary_new();
 
   status = tidySetErrorBuffer( tdoc, &errbuf );
+
+  access = rb_iv_get(self, "@access");
+  tidyOptSetInt( tdoc, TidyAccessibilityCheckLevel, NUM2UINT(access));
 
   if (status >= 0) {
 
@@ -102,11 +107,22 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   return array;
 }
 
+static VALUE rb_tidy_init(VALUE self)
+{
+  VALUE access = INT2NUM(4);
+  rb_iv_set(self, "@access", access);
+  return self;
+}
+
 void Init_tidy()
 {
   cTidy = rb_define_class("Tidy", rb_cObject);
   rb_define_singleton_method(cTidy, "new", rb_tidy_new, 0);
+
   rb_define_method(cTidy, "parse", rb_tidy_parse, 1);
+  rb_define_method(cTidy, "initialize", rb_tidy_init, 0);
+
+  rb_define_attr(cTidy, "access", 1, 1);
 }
 
 

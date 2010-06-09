@@ -19,4 +19,9 @@ describe "tidy class methods" do
     errors, html = tidy.parse(file)
   end
 
+  it "should have an access variable" do
+    tidy = Tidy.new
+    tidy.should respond_to(:access)
+  end
+
 end
