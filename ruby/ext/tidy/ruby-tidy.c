@@ -1,3 +1,6 @@
+/*
+  ruby-tidy.c - Ruby driver for HTML TidyLib
+*/
 #include <ruby.h>
 #include "tidy.h"
 #include "buffio.h"
@@ -41,15 +44,13 @@ static VALUE rb_tidy_new(VALUE class, VALUE hash)
   return tdata;
 }
 
-/* parse the given input and return the tidy output, and the errors */
+/* parse the given input and return the tidy errors and output */
 static VALUE rb_tidy_parse(VALUE self, VALUE input)
 {
   VALUE array;
-
   TidyDoc tdoc;
   TidyBuffer output;
   TidyBuffer errbuf;
-  TidyInputSource source;
   int status          = 0;
 
   /* See platform.h, opaque_type for typedef convention */
@@ -63,11 +64,22 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   status = tidySetErrorBuffer( tdoc, &errbuf );
 
   if (status >= 0) {
-    if (rb_respond_to(input, rb_intern("getc"))) {
+
+    int is_input_source = 0;
+
+    is_input_source =
+      rb_respond_to(input, rb_intern("eof")) == Qtrue &&
+      rb_respond_to(input, rb_intern("getc")) == Qtrue &&
+      rb_respond_to(input, rb_intern("ungetc")) == Qtrue;
+
+    if (is_input_source != 0) {
+      TidyInputSource source;
+
       tidyInitSource(&source, (void *)&input,
         (TidyGetByteFunc)rb_tidyGetByte,
         (TidyUngetByteFunc)rb_tidyUngetByte,
         (TidyEOFFunc)rb_tidyIsEOF);
+
       status = tidyParseSource(tdoc, &source);
     } else {
       status = tidyParseString(tdoc, StringValuePtr(input));
@@ -90,8 +102,7 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   return array;
 }
 
-void
-Init_tidy()
+void Init_tidy()
 {
   cTidy = rb_define_class("Tidy", rb_cObject);
   rb_define_singleton_method(cTidy, "new", rb_tidy_new, 0);
