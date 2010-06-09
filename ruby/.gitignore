@@ -1,3 +1,4 @@
 .DS_Store
 ext/*.o
 ext/*.bundle
+ext/Makefile

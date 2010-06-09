@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'rake'
+require 'rake/extensiontask'
 
 #require File.join(File.expand_path(File.dirname(__FILE__)), "lib")
 
@@ -16,6 +17,7 @@ begin
     gem.email = "carl.douglas@gmail.com"
     gem.homepage = "http://github.com/carld/tidy"
     gem.authors = ["Carl Douglas"]
+    gem.extensions = FileList["ext/**/extconf.rb"]
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -53,33 +55,6 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-namespace :ext do
+Rake::ExtensionTask.new('tidy')
 
-  file ext_extconf = 'ext/extconf.rb'
-  ext_sources = FileList['ext/*.{h,rb,c}']
-  ext_libname = "lib/tidy.#{Config::CONFIG['DLEXT']}"
-
-  file ext_libname => ext_sources + ['ext/Makefile'] do
-    chdir('ext') { sh MAKE }
-    cp "ext/tidy.#{Config::CONFIG['DLEXT']}", ext_libname
-  end
-
-  desc "Build C extension"
-  task :build => [:make]
-
-  task :make => ext_libname
-
-  file 'ext/Makefile' => ext_extconf do
-    chdir 'ext' do
-      ruby 'extconf.rb'
-    end
-  end
-
-end
-
-task :clean do
-  chdir 'ext' do
-    sh "#{MAKE} clean" if test ?e, 'Makefile'
-  end
-end
 
