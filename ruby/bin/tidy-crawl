@@ -18,7 +18,7 @@ y_combinator {|callback|
   lambda {|entry|
 
     uri = open(entry)
-    errors, out = tidy.parse(uri)
+    errors, out = tidy.parse(uri.read)
     puts "URI: #{entry}"
 
     errors.each do |error|
