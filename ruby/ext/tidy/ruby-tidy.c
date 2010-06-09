@@ -35,7 +35,7 @@ static VALUE rb_tidy_new(VALUE class, VALUE hash)
 {
   VALUE argv[1];
   TidyDoc tdoc = tidyCreate();
-  VALUE tdata = Data_Wrap_Struct(class, 0, rb_tidy_free, tdoc);
+  VALUE tdata = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
   argv[0] = hash;
   //rb_obj_call_init(tdata, 1, argv);
   return tdata;
