@@ -8,15 +8,15 @@ describe "tidy class methods" do
 
   it "should parse a string" do
     tidy = Tidy.new
-    result = tidy.parse("<html><body>String</body></html>")
-    puts result.inspect
+    errors, html = tidy.parse("<html><body>String</body></html>")
+    puts errors.inspect
+    puts html.inspect
   end
 
   it "should parse a file" do
     file = File.new(File.join(File.dirname(__FILE__),'test1.html'))
     tidy = Tidy.new
-    result = tidy.parse(file)
-    puts result.inspect
+    errors, html = tidy.parse(file)
   end
 
 end
