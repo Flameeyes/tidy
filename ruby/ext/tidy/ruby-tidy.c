@@ -103,6 +103,11 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   if (status >= 0)
     status = tidyRunDiagnostics( tdoc );
   if (status >= 0)
+    tidyErrorSummary( tdoc );
+  if (status >= 0)
+    tidyGeneralInfo( tdoc );
+
+  if (status >= 0)
     status = tidySaveBuffer( tdoc, &output );
 
   contentErrors   += tidyErrorCount( tdoc );
