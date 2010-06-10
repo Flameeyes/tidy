@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), "..", "spec_helper")
 
-describe "tidy class methods" do
+describe "tidy compatibility methods" do
 
   subject { Tidy.new }
 
@@ -29,7 +29,9 @@ describe "tidy class methods" do
   it "should parse a string" do
     tidy = Tidy.open({}) do |tidy|
       xml = tidy.clean("<html><body>String</body></html>")
+      xml.should_not be_empty
     end
+    tidy.errors.should_not be_empty
   end
 
 end
