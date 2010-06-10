@@ -87,7 +87,7 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 
       status = tidyParseSource(tdoc, &source);
     } else {
-      status = tidyParseString(tdoc, StringValuePtr(input));
+      status = tidyParseString(tdoc, StringValue(input));
     }
   }
 
