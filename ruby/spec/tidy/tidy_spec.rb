@@ -28,7 +28,6 @@ describe "tidy class methods" do
   it "should be able to parse more than one string consecutively" do
     errors1, html1 = subject.parse("<html><body>String</body></html>")
     errors2, html2 = subject.parse("<html><head><title>hello</title></head><body>String</body></html>")
-    errors1.should_not == errors2
   end
 
 end

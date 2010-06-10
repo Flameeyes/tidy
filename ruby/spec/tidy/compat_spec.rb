@@ -28,17 +28,38 @@ describe "tidy compatibility methods" do
 
   it "should parse a string" do
     tidy = Tidy.open({}) do |tidy|
-      xml = tidy.clean("<html><body>String</body></html>")
-      xml.should_not be_empty
+      html = tidy.clean("<html><body>String</body></html>")
+      html.should_not be_empty
     end
   end
 
   it "should be able to parse more than one string consecutively" do
     tidy = Tidy.open({}) do |tidy|
-    errors1, html1 = tidy.clean("<html><body>String</body></html>")
-    errors2, html2 = tidy.clean("<html><head><title>hello</title></head><body>String</body></html>")
-    errors1.should_not == errors2
+      html1 = tidy.clean("<html><body>String</body></html>")
+      errors1 = tidy.errors
+      html2 = tidy.clean("<html><body>String</body></html>")
+      errors2 = tidy.errors
+
+      errors1.should == errors2
     end
   end
 
+  it "should observe the show_warnings entry in the option hash" do
+    errors1 = nil
+    errors2 = nil
+
+    tidy = Tidy.open({:show_warnings => false}) do |tidy|
+      html = tidy.clean("<html><body>String</body></html>")
+      errors1 = tidy.errors
+      puts errors1
+    end
+
+    tidy = Tidy.open({:show_warnings => true}) do |tidy|
+      html = tidy.clean("<html><body>String</body></html>")
+      errors2 = tidy.errors
+      puts errors2
+    end
+
+    errors1.should_not == errors2
+  end
 end

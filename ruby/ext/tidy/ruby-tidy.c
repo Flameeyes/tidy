@@ -34,16 +34,25 @@ static void rb_tidy_free(void *ptr)
 }
 
 /* create a new tidy doc */
-/* TODO, observe :show_warnings=>true in hash */
-static VALUE rb_tidy_new(VALUE class, VALUE hash)
+static VALUE rb_tidy_new(int argc, VALUE *argv, VALUE class)
 {
-  VALUE argv[1];
   TidyDoc tdoc = tidyCreate();
-  VALUE tdata = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
-  argv[0] = hash;
+  VALUE options;
+  VALUE access = INT2NUM(4);
+  VALUE errors = rb_ary_new();
 
-  rb_obj_call_init(tdata, 0, NULL);
-  return tdata;
+  VALUE self = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
+
+  rb_scan_args(argc, argv, "01", &options);
+  options = NIL_P(options) ? rb_hash_new() : options;
+
+  rb_iv_set(self, "@options", options);
+  rb_iv_set(self, "@access", access);
+  rb_iv_set(self, "@errors", errors);
+
+  rb_obj_call_init(self, 0, NULL);
+
+  return self;
 }
 
 /* parse the given input and return the tidy errors and output */
@@ -52,6 +61,7 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   VALUE array;
   VALUE access;
   VALUE errors;
+  VALUE options;
 
   TidyDoc tdoc;
   TidyBuffer output;
@@ -74,6 +84,8 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 
   access = rb_iv_get(self, "@access");
   tidyOptSetInt( tdoc, TidyAccessibilityCheckLevel, NUM2UINT(access));
+
+  options = rb_iv_get(self, "@options");
 
   if (status >= 0) {
 
@@ -114,10 +126,12 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   contentWarnings += tidyWarningCount( tdoc );
   accessWarnings  += tidyAccessWarningCount( tdoc );
 
-  if (contentErrors > 0 || contentWarnings > 0) {
+  VALUE show_warnings = rb_hash_aref(options, ID2SYM(rb_intern("show_warnings")));
+
+  if (contentErrors > 0 || (show_warnings == Qtrue && contentWarnings > 0)) {
     errors = rb_str_new2(errbuf.bp);
   } else {
-    errors = rb_ary_new2("");
+    errors = rb_str_new2("");
   }
 
   rb_iv_set(self, "@errors", errors);
@@ -133,18 +147,16 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 
 static VALUE rb_tidy_init(VALUE self)
 {
-  VALUE access = INT2NUM(4);
-  VALUE errors = rb_ary_new();
-
-  rb_iv_set(self, "@access", access);
-  rb_iv_set(self, "@errors", errors);
-
   return self;
 }
 
-static VALUE rb_tidy_open(VALUE class, VALUE hash)
+static VALUE rb_tidy_open(VALUE class, VALUE options)
 {
-  VALUE tidy = rb_tidy_new(class, hash);
+  VALUE args[1];
+  VALUE tidy;
+
+  args[0] = options;
+  tidy  = rb_tidy_new(1, args, class);
 
   if (rb_block_given_p()) {
     rb_yield(tidy);
@@ -181,13 +193,13 @@ void Init_tidy()
 
   rb_define_class_variable(cTidy, "@@path", rb_str_new2("tidy-is-built-in"));
 
-  rb_define_singleton_method(cTidy, "new", rb_tidy_new, 0);
+  rb_define_singleton_method(cTidy, "new", rb_tidy_new, -1);
   rb_define_singleton_method(cTidy, "open", rb_tidy_open, 1);
   rb_define_singleton_method(cTidy, "path", rb_tidy_path_get, 0);
   rb_define_singleton_method(cTidy, "path=", rb_tidy_path_set, 1);
 
-  rb_define_method(cTidy, "parse", rb_tidy_parse, 1);
   rb_define_method(cTidy, "initialize", rb_tidy_init, 0);
+  rb_define_method(cTidy, "parse", rb_tidy_parse, 1);
   rb_define_method(cTidy, "clean", rb_tidy_clean, 1);
 
   rb_define_attr(cTidy, "access", 1, 1);
