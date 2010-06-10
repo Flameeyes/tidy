@@ -33,4 +33,12 @@ describe "tidy compatibility methods" do
     end
   end
 
+  it "should be able to parse more than one string consecutively" do
+    tidy = Tidy.open({}) do |tidy|
+    errors1, html1 = tidy.clean("<html><body>String</body></html>")
+    errors2, html2 = tidy.clean("<html><head><title>hello</title></head><body>String</body></html>")
+    errors1.should_not == errors2
+    end
+  end
+
 end
