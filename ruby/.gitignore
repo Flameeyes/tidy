@@ -2,3 +2,6 @@
 ext/*.o
 ext/*.bundle
 ext/Makefile
+lib/
+pkg/
+*.gemspec
