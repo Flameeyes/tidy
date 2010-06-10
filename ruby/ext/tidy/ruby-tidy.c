@@ -115,9 +115,9 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   accessWarnings  += tidyAccessWarningCount( tdoc );
 
   if (contentErrors > 0 || contentWarnings > 0) {
-    errors = rb_str_split(rb_str_new2(errbuf.bp), "\n");
+    errors = rb_str_new2(errbuf.bp);
   } else {
-    errors = rb_ary_new();
+    errors = rb_ary_new2("");
   }
 
   rb_iv_set(self, "@errors", errors);
