@@ -49,6 +49,7 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 {
   VALUE array;
   VALUE access;
+  VALUE errors;
 
   TidyDoc tdoc;
   TidyBuffer output;
@@ -98,7 +99,11 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   if (status >= 0)
     status = tidySaveBuffer( tdoc, &output );
 
-  rb_ary_store(array, 0, rb_str_split(rb_str_new2(errbuf.bp), "\n"));
+  errors = rb_str_split(rb_str_new2(errbuf.bp), "\n");
+
+  rb_iv_set(self, "@errors", errors);
+
+  rb_ary_store(array, 0, errors);
   rb_ary_store(array, 1, rb_str_new2(output.bp));
 
   tidyBufFree( &output );
@@ -110,19 +115,44 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 static VALUE rb_tidy_init(VALUE self)
 {
   VALUE access = INT2NUM(4);
+  VALUE errors = rb_ary_new();
+
   rb_iv_set(self, "@access", access);
+  rb_iv_set(self, "@errors", errors);
+
   return self;
+}
+
+static VALUE rb_tidy_open(VALUE class, VALUE hash)
+{
+  VALUE tidy = rb_tidy_new(class, hash);
+
+  if (rb_block_given_p()) {
+    rb_yield(tidy);
+  }
+
+  return tidy;
+}
+
+static VALUE rb_tidy_clean(VALUE self, VALUE input)
+{
+  VALUE array;
+
+  array = rb_tidy_parse(self, input);
+
+  return rb_ary_entry(array, 1);
 }
 
 void Init_tidy()
 {
   cTidy = rb_define_class("Tidy", rb_cObject);
   rb_define_singleton_method(cTidy, "new", rb_tidy_new, 0);
+  rb_define_singleton_method(cTidy, "open", rb_tidy_open, 1);
 
   rb_define_method(cTidy, "parse", rb_tidy_parse, 1);
   rb_define_method(cTidy, "initialize", rb_tidy_init, 0);
+  rb_define_method(cTidy, "clean", rb_tidy_clean, 1);
 
   rb_define_attr(cTidy, "access", 1, 1);
+  rb_define_attr(cTidy, "errors", 1, 0);
 }
-
-
