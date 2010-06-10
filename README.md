@@ -3,9 +3,14 @@ Description
 
 This is the HTML Tidy library built as a Ruby extension.
 
-The original C source for Tidy can be found at http://tidy.sourceforge.net/
+The original C source for Tidy can be found at
+[http://tidy.sourceforge.net](http://tidy.sourceforge.net)
 
-This version of Ruby Tidy is compatible enough with the other to be called by Tarantula (http://github.com/relevance/tarantula).
+You can read more about Tidy at
+[http://www.w3.org/People/Raggett/tidy/](http://www.w3.org/People/Raggett/tidy/)
+
+This version of Ruby Tidy is compatible enough with the other Ruby Tidy to be called by
+[Tarantula](http://github.com/relevance/tarantula).
 
 Usage
 -----
@@ -44,8 +49,10 @@ If you want to run Tarantula on your Rails application, you may want to create a
 Installing
 ----------
 
+Using http://rubygems.org:
+
 <pre>
-$ [sudo] gem install tidy
+$ [sudo] gem install tidy-ext
 </pre>
 
 

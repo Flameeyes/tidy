@@ -9,11 +9,9 @@ MAKE = 'make'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "tidy"
-    gem.summary = "HTML validator."
-    gem.description = <<-EOS
-    Validates a web page.
-    EOS
+    gem.name = "tidy-ext"
+    gem.summary = "W3C HTML Tidy library implemented as a Ruby extension."
+    gem.description = "Tidy up web pages."
     gem.email = "carl.douglas@gmail.com"
     gem.homepage = "http://github.com/carld/tidy"
     gem.authors = ["Carl Douglas"]
