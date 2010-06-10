@@ -10,10 +10,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "tidy-ext"
-    gem.summary = "HTML Tidy library implemented as a Ruby extension."
-    gem.description = <<-EOS
-    Tidies up web pages.
-    EOS
+    gem.summary = "W3C HTML Tidy library implemented as a Ruby extension."
+    gem.description = "Tidy up web pages."
     gem.email = "carl.douglas@gmail.com"
     gem.homepage = "http://github.com/carld/tidy"
     gem.authors = ["Carl Douglas"]
