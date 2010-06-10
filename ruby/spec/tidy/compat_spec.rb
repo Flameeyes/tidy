@@ -31,7 +31,6 @@ describe "tidy compatibility methods" do
       xml = tidy.clean("<html><body>String</body></html>")
       xml.should_not be_empty
     end
-    tidy.errors.should_not be_empty
   end
 
 end

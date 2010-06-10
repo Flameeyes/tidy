@@ -3,9 +3,12 @@ require 'open-uri'
 
 describe "tidy class methods" do
 
+  subject { Tidy.new }
+
   it "should parse the google.com uri" do
-    tidy = Tidy.new
-    errors, html = tidy.parse(open("http://www.google.com"))
+    uri = open("http://www.google.com")
+    page = uri.read
+    errors, html = subject.parse(page)
   end
 
 end

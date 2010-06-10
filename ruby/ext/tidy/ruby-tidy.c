@@ -34,12 +34,14 @@ static void rb_tidy_free(void *ptr)
 }
 
 /* create a new tidy doc */
+/* TODO, observe :show_warnings=>true in hash */
 static VALUE rb_tidy_new(VALUE class, VALUE hash)
 {
   VALUE argv[1];
   TidyDoc tdoc = tidyCreate();
   VALUE tdata = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
   argv[0] = hash;
+
   rb_obj_call_init(tdata, 0, NULL);
   return tdata;
 }
@@ -55,6 +57,10 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   TidyBuffer output;
   TidyBuffer errbuf;
   int status          = 0;
+
+  int contentErrors   = 0;
+  int contentWarnings = 0;
+  int accessWarnings  = 0;
 
   /* See platform.h, opaque_type for typedef convention */
   Data_Get_Struct(self, struct _TidyDoc, tdoc);
@@ -99,7 +105,15 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   if (status >= 0)
     status = tidySaveBuffer( tdoc, &output );
 
-  errors = rb_str_split(rb_str_new2(errbuf.bp), "\n");
+  contentErrors   += tidyErrorCount( tdoc );
+  contentWarnings += tidyWarningCount( tdoc );
+  accessWarnings  += tidyAccessWarningCount( tdoc );
+
+  if (contentErrors > 0 || contentWarnings > 0) {
+    errors = rb_str_split(rb_str_new2(errbuf.bp), "\n");
+  } else {
+    errors = rb_ary_new();
+  }
 
   rb_iv_set(self, "@errors", errors);
 
