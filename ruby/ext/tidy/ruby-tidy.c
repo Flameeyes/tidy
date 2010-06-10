@@ -143,11 +143,29 @@ static VALUE rb_tidy_clean(VALUE self, VALUE input)
   return rb_ary_entry(array, 1);
 }
 
+static VALUE rb_tidy_path_get(VALUE self)
+{
+  VALUE path;
+  path = rb_cv_get(self, "@@path");
+  return path;
+}
+
+static VALUE rb_tidy_path_set(VALUE self, VALUE path)
+{
+  rb_cv_set(self, "@@path", path);
+  return Qnil;
+}
+
 void Init_tidy()
 {
   cTidy = rb_define_class("Tidy", rb_cObject);
+
+  rb_define_class_variable(cTidy, "@@path", rb_str_new2("tidy-is-built-in"));
+
   rb_define_singleton_method(cTidy, "new", rb_tidy_new, 0);
   rb_define_singleton_method(cTidy, "open", rb_tidy_open, 1);
+  rb_define_singleton_method(cTidy, "path", rb_tidy_path_get, 0);
+  rb_define_singleton_method(cTidy, "path=", rb_tidy_path_set, 1);
 
   rb_define_method(cTidy, "parse", rb_tidy_parse, 1);
   rb_define_method(cTidy, "initialize", rb_tidy_init, 0);
