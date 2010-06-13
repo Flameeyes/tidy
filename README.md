@@ -32,7 +32,7 @@ or, for compatibility with the other Tidy library:
 <pre>
   require 'tidy'
 
-  tidy = Tidy.open({}) do |tidy|
+  tidy = Tidy.open({:show_warnings => true}) do |tidy|
     xml = tidy.clean("<html><body>String</body></html>")
   end
 </pre>

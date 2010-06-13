@@ -2,10 +2,6 @@ require 'rubygems'
 require 'rake'
 require 'rake/extensiontask'
 
-#require File.join(File.expand_path(File.dirname(__FILE__)), "lib")
-
-MAKE = 'make'
-
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|

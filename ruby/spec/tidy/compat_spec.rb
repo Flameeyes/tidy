@@ -51,13 +51,11 @@ describe "tidy compatibility methods" do
     tidy = Tidy.open({:show_warnings => false}) do |tidy|
       html = tidy.clean("<html><body>String</body></html>")
       errors1 = tidy.errors
-      puts errors1
     end
 
     tidy = Tidy.open({:show_warnings => true}) do |tidy|
       html = tidy.clean("<html><body>String</body></html>")
       errors2 = tidy.errors
-      puts errors2
     end
 
     errors1.should_not == errors2
