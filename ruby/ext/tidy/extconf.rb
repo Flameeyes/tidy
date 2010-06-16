@@ -1,6 +1,6 @@
 require 'mkmf'
 
-if arg_config('--with-coverage')
+if arg_config('--with-coverage') || ENV['COV']
   $CFLAGS += ' -fprofile-arcs -ftest-coverage '
   $LDFLAGS += ' -fprofile-arcs -ftest-coverage '
 end
