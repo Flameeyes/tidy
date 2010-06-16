@@ -49,6 +49,19 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-Rake::ExtensionTask.new('tidy')
+Rake::ExtensionTask.new do |ext|
+  ext.name = 'tidy'
+  ext.ext_dir = 'ext/tidy'
+  ext.config_options << '--with-coverage' if ENV['COV']
+end
 
+desc "Recompile with gcc coverage options and run specs"
+task :gcov => [:clean] do |t|
+  ENV['COV'] = '1'
+  Rake::Task[:compile].invoke
+  Rake::Task[:spec].invoke
+
+  ruby_tidy_o = Dir.glob('**/ruby-tidy.o').first
+  puts %x{gcov --no-output --object-file #{ruby_tidy_o} ext/tidy/ruby-tidy.c}
+end
 
