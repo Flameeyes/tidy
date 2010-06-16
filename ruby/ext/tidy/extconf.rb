@@ -1,10 +1,9 @@
 require 'mkmf'
 
-$CFLAGS ||= ''
-$LDFLAGS ||= ''
-
-$CFLAGS << ' -fprofile-arcs -ftest-coverage '
-$LDFLAGS << ' -fprofile-arcs -ftest-coverage '
+if arg_config('--with-coverage')
+  $CFLAGS += ' -fprofile-arcs -ftest-coverage '
+  $LDFLAGS += ' -fprofile-arcs -ftest-coverage '
+end
 
 dir_config("tidy")
 create_makefile("tidy")
