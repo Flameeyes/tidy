@@ -37,6 +37,20 @@ or, for compatibility with the other Tidy library:
   end
 </pre>
 
+When using cucumber to write tests, the following tidy_steps.rb might be useful:
+
+<pre>
+require 'tidy'
+
+Given /^(.+) is tidy$/ do |page_name|
+  visit path_to(page_name)
+  tidy = Tidy.open({:show_warnings => true}) do |tidy|
+    out = tidy.clean(response.body)
+  end
+  tidy.errors.should == ''
+end
+</pre>
+
 If you want to run Tarantula on your Rails application, you may want to create a rake task lib/tasks/tarantula.rake that looks like:
 
 <pre>

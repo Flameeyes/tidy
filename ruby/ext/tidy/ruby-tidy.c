@@ -165,6 +165,7 @@ static VALUE rb_tidy_open(VALUE class, VALUE options)
   return tidy;
 }
 
+/* Given a string, returns the string after tidying */
 static VALUE rb_tidy_clean(VALUE self, VALUE input)
 {
   VALUE array;
@@ -174,6 +175,7 @@ static VALUE rb_tidy_clean(VALUE self, VALUE input)
   return rb_ary_entry(array, 1);
 }
 
+/* For sideways compatibility */
 static VALUE rb_tidy_path_get(VALUE self)
 {
   VALUE path;
@@ -181,6 +183,7 @@ static VALUE rb_tidy_path_get(VALUE self)
   return path;
 }
 
+/* For sideways compatibility */
 static VALUE rb_tidy_path_set(VALUE self, VALUE path)
 {
   rb_cv_set(self, "@@path", path);
