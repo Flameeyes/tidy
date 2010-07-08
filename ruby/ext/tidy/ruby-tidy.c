@@ -150,6 +150,7 @@ static VALUE rb_tidy_init(VALUE self)
   return self;
 }
 
+/* Create a tidy object */
 static VALUE rb_tidy_open(VALUE class, VALUE options)
 {
   VALUE args[1];
