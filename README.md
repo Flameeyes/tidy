@@ -16,20 +16,6 @@ Usage
 -----
 
 <pre>
-require 'tidy'
-require 'open-uri'
-
-tidy = Tidy.new
-
-uri = open("http://www.google.com")
-errors, html = tidy.parse(uri.read)
-
-puts errors
-</pre>
-
-or, for compatibility with the other Tidy library:
-
-<pre>
   require 'tidy'
 
   tidy = Tidy.open({:show_warnings => true}) do |tidy|

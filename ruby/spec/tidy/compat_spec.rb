@@ -48,16 +48,42 @@ describe "tidy compatibility methods" do
     errors1 = nil
     errors2 = nil
 
-    tidy = Tidy.open({:show_warnings => false}) do |tidy|
+    tidy = Tidy.open({'show-warnings' => false}) do |tidy|
       html = tidy.clean("<html><body>String</body></html>")
       errors1 = tidy.errors
     end
 
-    tidy = Tidy.open({:show_warnings => true}) do |tidy|
+    tidy = Tidy.open({'show-warnings' => true}) do |tidy|
       html = tidy.clean("<html><body>String</body></html>")
       errors2 = tidy.errors
     end
 
     errors1.should_not == errors2
+  end
+
+  it "should observe the options hash when it uses strings" do
+    laundry = "<html><body>String<img src=''/></body></html>"
+    options = {
+      'alt-text' => 'hello world',
+      'uppercase-tags' => true
+    }
+    tidy = Tidy.open(options) do |tidy|
+      clean = tidy.clean(laundry)
+      clean.should =~ /<HTML>/
+      clean.should =~ /alt="hello world"/
+    end
+  end
+
+  it "should observe the options hash when it uses symbols" do
+    laundry = "<html><body>String<img src=''/></body></html>"
+    options = {
+      :alt_text => 'hello world',
+      :uppercase_tags => true
+    }
+    tidy = Tidy.open(options) do |tidy|
+      clean = tidy.clean(laundry)
+      clean.should =~ /<HTML>/
+      clean.should =~ /alt="hello world"/
+    end
   end
 end

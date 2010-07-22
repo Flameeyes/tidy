@@ -55,6 +55,61 @@ static VALUE rb_tidy_new(int argc, VALUE *argv, VALUE class)
   return self;
 }
 
+/* called when iterating over options hash */
+static VALUE rb_tidy_set_option(VALUE arg1, VALUE arg2)
+{
+  VALUE key, value;
+  TidyDoc tdoc;
+  TidyOption opt;
+  Bool status = no;
+
+  /* See platform.h, opaque_type for typedef convention */
+  Data_Get_Struct(arg2, struct _TidyDoc, tdoc);
+
+  key   = rb_ary_entry(arg1, 0);
+  value = rb_ary_entry(arg1, 1);
+
+  /* if the key is a symbol, convert it to a string
+   * and replace the underscores '_' with minuses '-'
+   */
+  if (TYPE(key) == T_SYMBOL) {
+    char *ckey, *ptr;
+
+    ckey = (char *) rb_id2name(SYM2ID(key));
+
+    for(ptr = ckey; *ptr != '\0'; ptr++) {
+      if (*ptr == '_') {
+        *ptr = '-';
+      }
+    }
+
+    opt = tidyGetOptionByName(tdoc, ckey);
+  } else {
+    opt = tidyGetOptionByName(tdoc, StringValuePtr(key));
+  }
+
+  if ( opt != NULL ) {
+    TidyOptionId optId = tidyOptGetId(opt);
+
+    switch(TYPE(value)) {
+      case T_FALSE:
+        status = tidyOptSetBool(tdoc, optId, no);
+        break;
+      case T_TRUE:
+        status = tidyOptSetBool(tdoc, optId, yes);
+        break;
+      case T_FIXNUM:
+        status = tidyOptSetInt(tdoc, optId, NUM2ULONG(value));
+        break;
+      default:
+        status = tidyOptSetValue(tdoc, optId, StringValuePtr(value));
+        break;
+    }
+  }
+
+  return Qnil;
+}
+
 /* parse the given input and return the tidy errors and output */
 static VALUE rb_tidy_parse(VALUE self, VALUE input)
 {
@@ -82,10 +137,8 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
 
   status = tidySetErrorBuffer( tdoc, &errbuf );
 
-  access = rb_iv_get(self, "@access");
-  tidyOptSetInt( tdoc, TidyAccessibilityCheckLevel, NUM2UINT(access));
-
   options = rb_iv_get(self, "@options");
+  rb_iterate(rb_each, options, rb_tidy_set_option, self);
 
   if (status >= 0) {
 
@@ -122,13 +175,11 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   if (status >= 0)
     status = tidySaveBuffer( tdoc, &output );
 
-  contentErrors   += tidyErrorCount( tdoc );
-  contentWarnings += tidyWarningCount( tdoc );
-  accessWarnings  += tidyAccessWarningCount( tdoc );
+  contentErrors   = tidyErrorCount( tdoc );
+  contentWarnings = tidyWarningCount( tdoc );
+  accessWarnings  = tidyAccessWarningCount( tdoc );
 
-  VALUE show_warnings = rb_hash_aref(options, ID2SYM(rb_intern("show_warnings")));
-
-  if (contentErrors > 0 || (show_warnings == Qtrue && contentWarnings > 0)) {
+  if (contentErrors > 0 || contentWarnings > 0) {
     errors = rb_str_new2(errbuf.bp);
   } else {
     errors = rb_str_new2("");
