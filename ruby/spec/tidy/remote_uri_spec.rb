@@ -8,7 +8,9 @@ describe "tidy class methods" do
   it "should parse the google.com uri" do
     uri = open("http://www.google.com")
     page = uri.read
-    errors, html = subject.parse(page)
+    tidy = Tidy.new() do |tidy|
+      errors, html = tidy.clean(page)
+    end
   end
 
 end

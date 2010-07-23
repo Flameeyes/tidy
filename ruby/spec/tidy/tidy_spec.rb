@@ -9,16 +9,20 @@ describe "tidy class methods" do
   end
 
   it "should parse a string" do
-    errors, html = subject.parse("<html><body>String</body></html>")
-    errors.should_not be_nil
-    html.should_not be_nil
+    Tidy.new() do |tidy|
+      errors, html = tidy.clean("<html><body>String</body></html>")
+      errors.should_not be_nil
+      html.should_not be_nil
+    end
   end
 
   it "should parse a file" do
     file = File.new(File.join(File.dirname(__FILE__),'test1.html'))
-    errors, html = subject.parse(file)
-    errors.should_not be_nil
-    html.should_not be_nil
+    Tidy.new() do |tidy|
+      errors, html = tidy.clean(file)
+      errors.should_not be_nil
+      html.should_not be_nil
+    end
   end
 
   it "should respond to access" do
@@ -26,8 +30,10 @@ describe "tidy class methods" do
   end
 
   it "should be able to parse more than one string consecutively" do
-    errors1, html1 = subject.parse("<html><body>String</body></html>")
-    errors2, html2 = subject.parse("<html><head><title>hello</title></head><body>String</body></html>")
+    Tidy.new do |tidy|
+      errors1, html1 = tidy.clean("<html><body>String</body></html>")
+      errors2, html2 = tidy.clean("<html><head><title>hello</title></head><body>String</body></html>")
+    end
   end
 
 end

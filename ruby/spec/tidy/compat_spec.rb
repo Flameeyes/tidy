@@ -69,7 +69,7 @@ describe "tidy compatibility methods" do
     }
     tidy = Tidy.open(options) do |tidy|
       clean = tidy.clean(laundry)
-      clean.should =~ /<HTML>/
+      clean.should_not =~ /<[a-z]+\s+[^>]*>/
       clean.should =~ /alt="hello world"/
     end
   end
@@ -82,7 +82,7 @@ describe "tidy compatibility methods" do
     }
     tidy = Tidy.open(options) do |tidy|
       clean = tidy.clean(laundry)
-      clean.should =~ /<HTML>/
+      clean.should_not =~ /<[a-z]+\s+[^>]*>/
       clean.should =~ /alt="hello world"/
     end
   end
