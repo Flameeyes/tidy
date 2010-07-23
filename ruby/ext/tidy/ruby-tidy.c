@@ -33,28 +33,6 @@ static void rb_tidy_free(void *ptr)
   tidyRelease(ptr);
 }
 
-/* create a new tidy doc */
-static VALUE rb_tidy_new(int argc, VALUE *argv, VALUE class)
-{
-  TidyDoc tdoc = tidyCreate();
-  VALUE options;
-  VALUE access = INT2NUM(4);
-  VALUE errors = rb_ary_new();
-
-  VALUE self = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
-
-  rb_scan_args(argc, argv, "01", &options);
-  options = NIL_P(options) ? rb_hash_new() : options;
-
-  rb_iv_set(self, "@options", options);
-  rb_iv_set(self, "@access", access);
-  rb_iv_set(self, "@errors", errors);
-
-  rb_obj_call_init(self, 0, NULL);
-
-  return self;
-}
-
 /* called when iterating over options hash */
 static VALUE rb_tidy_set_option(VALUE arg1, VALUE arg2)
 {
@@ -110,6 +88,30 @@ static VALUE rb_tidy_set_option(VALUE arg1, VALUE arg2)
   return Qnil;
 }
 
+/* create a new tidy doc */
+static VALUE rb_tidy_new(int argc, VALUE *argv, VALUE class)
+{
+  TidyDoc tdoc = tidyCreate();
+  VALUE options;
+  VALUE access = INT2NUM(4);
+  VALUE errors = rb_ary_new();
+
+  VALUE self = Data_Wrap_Struct(class, 0, rb_tidy_free, (struct _TidyDoc *)tdoc);
+
+  rb_scan_args(argc, argv, "01", &options);
+  options = NIL_P(options) ? rb_hash_new() : options;
+
+  rb_iv_set(self, "@options", options);
+  rb_iv_set(self, "@access", access);
+  rb_iv_set(self, "@errors", errors);
+
+  rb_iterate(rb_each, options, rb_tidy_set_option, self);
+
+  rb_obj_call_init(self, 0, NULL);
+
+  return self;
+}
+
 /* parse the given input and return the tidy errors and output */
 static VALUE rb_tidy_parse(VALUE self, VALUE input)
 {
@@ -136,9 +138,6 @@ static VALUE rb_tidy_parse(VALUE self, VALUE input)
   array = rb_ary_new();
 
   status = tidySetErrorBuffer( tdoc, &errbuf );
-
-  options = rb_iv_get(self, "@options");
-  rb_iterate(rb_each, options, rb_tidy_set_option, self);
 
   if (status >= 0) {
 
