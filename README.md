@@ -23,18 +23,39 @@ Usage
   end
 </pre>
 
-When using cucumber to write tests, the following tidy_steps.rb might be useful:
+When using cucumber to write tests, it might be useful to copy features/step_definitions/tidy_steps.rb into your project's step definitions.
 
 <pre>
-require 'tidy'
+  require 'tidy'
 
-Given /^(.+) is tidy$/ do |page_name|
-  visit path_to(page_name)
-  tidy = Tidy.open({:show_warnings => true}) do |tidy|
-    out = tidy.clean(response.body)
+  Given /^(.+) is tidy$/ do |page_name|
+
+    visit path_to(page_name)
+    tidy = Tidy.open({:show_warnings => true}) do |tidy|
+      out = tidy.clean(response.body)
+    end
+
+    tidy.errors.scan(/(\d+) warning, (\d+) errors were found!/) do |w,e|
+      warnings = w.to_i
+      errors   = e.to_i
+      unless warnings == 0 && errors == 0
+        raise tidy.errors
+      end
+    end
   end
-  tidy.errors.should == ''
-end
+</pre>
+
+This allows you to a cucumber feature like
+
+<pre>
+  Scenario: visit the login page
+
+    Given the login page is tidy
+
+    And I am on the login page
+    And I fill in "email" with "blah"
+    And I fill in "password" with "blah"
+    And I press "Log in"
 </pre>
 
 If you want to run Tarantula on your Rails application, you may want to create a rake task lib/tasks/tarantula.rake that looks like:
