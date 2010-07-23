@@ -9,7 +9,7 @@ The original C source for Tidy can be found at
 You can read more about Tidy at
 [http://www.w3.org/People/Raggett/tidy/](http://www.w3.org/People/Raggett/tidy/)
 
-This version of Ruby Tidy is compatible enough with the other Ruby Tidy to be called by
+This version of Ruby Tidy is compatible enough with the Ruby wrapper around the standalone tidy to be called by 
 [Tarantula](http://github.com/relevance/tarantula).
 
 Usage
@@ -45,7 +45,7 @@ When using cucumber to write tests, it might be useful to copy features/step_def
   end
 </pre>
 
-This allows you to a cucumber feature like
+This allows you to write a cucumber feature like
 
 <pre>
   Scenario: visit the login page
