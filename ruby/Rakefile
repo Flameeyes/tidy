@@ -55,13 +55,24 @@ Rake::ExtensionTask.new do |ext|
   ext.config_options << '--with-coverage' if ENV['COV']
 end
 
-desc "Recompile with gcc coverage options and run specs"
-task :gcov => [:clean] do |t|
-  ENV['COV'] = '1'
-  Rake::Task[:compile].invoke
-  Rake::Task[:spec].invoke
+namespace :gcov do
 
-  ruby_tidy_o = Dir.glob('**/ruby-tidy.o').first
-  puts %x{gcov --no-output --object-file #{ruby_tidy_o} ext/tidy/ruby-tidy.c}
+  desc "Recompile with gcc coverage options"
+  task :compile do |t|
+    ENV['COV'] = '1'
+    Rake::Task["compile"].invoke
+  end
+
+  desc "Run specs and output gcov info"
+  task :spec do |t|
+    Rake::Task[:spec].invoke
+    obj = Dir.glob('**/ruby-tidy.o').first
+    puts %x{cd #{File.dirname(obj)} && gcov -b --object-file #{File.basename(obj)} ruby-tidy.c}
+  end
+
+  desc "Clean, compile with gcc coverage and run specs"
+  task :all, :needs => ["clean", :compile, :spec]  do |t|
+  end
+
 end
 
