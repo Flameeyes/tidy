@@ -35,7 +35,7 @@ When using cucumber to write tests, it might be useful to copy features/step_def
       out = tidy.clean(response.body)
     end
 
-    tidy.errors.scan(/(\d+) warning, (\d+) errors were found!/) do |w,e|
+    tidy.errors.scan(/(\d+) warnings?, (\d+) errors? were found!/) do |w,e|
       warnings = w.to_i
       errors   = e.to_i
       unless warnings == 0 && errors == 0
