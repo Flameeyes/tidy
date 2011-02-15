@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'rake'
-require 'rake/extensiontask'
 
 begin
   require 'jeweler'
@@ -14,6 +13,8 @@ begin
     gem.extensions = FileList["ext/**/extconf.rb"]
   end
   Jeweler::GemcutterTasks.new
+
+  task :spec => :check_dependencies
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
@@ -23,21 +24,23 @@ task :console do
   exec("irb -I lib -r tidy/alone")
 end
 
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
+begin
+  require 'spec/rake/spectask'
+  Spec::Rake::SpecTask.new(:spec) do |spec|
+    spec.libs << 'lib' << 'spec'
+    spec.spec_files = FileList['spec/**/*_spec.rb']
+  end
+
+  Spec::Rake::SpecTask.new(:rcov) do |spec|
+    spec.libs << 'lib' << 'spec'
+    spec.pattern = 'spec/**/*_spec.rb'
+    spec.rcov = true
+  end
+
+  task :default => :spec
+rescue LoadError
+  puts "RSpec (or a dependency) not available. Install it with: gem install rspec"
 end
-
-Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.rcov = true
-end
-
-task :spec => :check_dependencies
-
-task :default => :spec
 
 require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
@@ -49,10 +52,15 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-Rake::ExtensionTask.new do |ext|
-  ext.name = 'tidy'
-  ext.ext_dir = 'ext/tidy'
-  ext.config_options << '--with-coverage' if ENV['COV']
+begin
+  require 'rake/extensiontask'
+  Rake::ExtensionTask.new do |ext|
+    ext.name = 'tidy'
+    ext.ext_dir = 'ext/tidy'
+    ext.config_options << '--with-coverage' if ENV['COV']
+  end
+rescue LoadError
+  puts "rake-compiler not available. Install it with: gem install rake-compiler"
 end
 
 namespace :gcov do
